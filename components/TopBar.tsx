@@ -34,12 +34,28 @@ export default function TopBar({
   const [menu, setMenu] = useState<Menu>(null);
   const [copied, setCopied] = useState(false);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+  const helpRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
       if (copyTimer.current) clearTimeout(copyTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!menu) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (menu === "model" && modelRef.current?.contains(target)) return;
+      if (menu === "help" && helpRef.current?.contains(target)) return;
+      if (menu === "user" && userRef.current?.contains(target)) return;
+      setMenu(null);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [menu]);
 
   const share = async () => {
     try {
@@ -65,7 +81,7 @@ export default function TopBar({
       </button>
 
       {/* Model picker */}
-      <div className="relative">
+      <div className="relative" ref={modelRef}>
         <button
           onClick={() => setMenu(menu === "model" ? null : "model")}
           className="ring-focus flex h-9 items-center gap-2 rounded-lg border border-transparent px-2 text-[13px] font-medium text-white/85 transition hover:border-white/10 hover:bg-white/[0.04]"
@@ -84,7 +100,6 @@ export default function TopBar({
 
         {menu === "model" && (
           <>
-            <div className="fixed inset-0 z-40" onClick={close} aria-hidden="true" />
             <div
               className="absolute left-0 top-full z-50 mt-2 w-[min(290px,calc(100vw-4.5rem))] animate-popIn rounded-xl border border-white/10 bg-ink-800/95 p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl"
               role="menu"
@@ -154,7 +169,7 @@ export default function TopBar({
           <span className="hidden sm:inline">{copied ? "Link copied" : "Share"}</span>
         </button>
 
-        <div className="relative hidden sm:block">
+        <div className="relative hidden sm:block" ref={helpRef}>
           <button
             onClick={() => setMenu(menu === "help" ? null : "help")}
             className="ring-focus grid h-9 w-9 place-items-center rounded-lg text-white/40 transition hover:bg-white/[0.05] hover:text-white/80"
@@ -165,7 +180,6 @@ export default function TopBar({
           </button>
           {menu === "help" && (
             <>
-              <div className="fixed inset-0 z-40" onClick={close} aria-hidden="true" />
               <div className="absolute right-0 top-full z-50 mt-2 w-[268px] animate-popIn rounded-xl border border-white/10 bg-ink-800/95 p-3 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/80">
                   <Sparkles size={12} className="text-lime" /> Quick tips
@@ -197,7 +211,7 @@ export default function TopBar({
 
         <div className="mx-1 hidden h-5 w-px bg-white/10 sm:block" />
 
-        <div className="relative">
+        <div className="relative" ref={userRef}>
           <button
             onClick={() => setMenu(menu === "user" ? null : "user")}
             className="ring-focus grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-violet-400 via-fuchsia-400 to-sky-400 text-[11px] font-semibold text-ink-950 ring-2 ring-white/10 transition hover:ring-white/25"
@@ -208,7 +222,6 @@ export default function TopBar({
           </button>
           {menu === "user" && (
             <>
-              <div className="fixed inset-0 z-40" onClick={close} aria-hidden="true" />
               <div className="absolute right-0 top-full z-50 mt-2 w-[236px] animate-popIn rounded-xl border border-white/10 bg-ink-800/95 p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
                 <div className="border-b border-white/[0.07] px-2.5 pb-2.5 pt-2">
                   <div className="text-[12.5px] font-medium text-white/90">Tushar</div>

@@ -11,9 +11,10 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { historyGroups, type Chat } from "@/lib/data";
+import type { Chat } from "@/lib/data";
 
 type SidebarProps = {
+  groups: { label: Chat["group"]; chats: Chat[] }[];
   open: boolean;
   collapsed: boolean;
   activeChatId: string | null;
@@ -25,6 +26,7 @@ type SidebarProps = {
 };
 
 export default function Sidebar({
+  groups,
   open,
   collapsed,
   activeChatId,
@@ -186,7 +188,7 @@ export default function Sidebar({
               </div>
 
               <div className="flex flex-col">
-                {historyGroups.map((group) => (
+                {groups.map((group) => (
                   <div key={group.label} className="mb-1">
                     <div className="px-2 pb-1 pt-2.5 text-[10px] font-medium tracking-wide text-white/20">
                       {group.label}

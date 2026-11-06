@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import {
   generateReply,
+  historyGroups,
   makeId,
   models,
   titleFromPrompt,
@@ -21,6 +22,7 @@ export default function HomeApp() {
   const [collapsed, setCollapsed] = useState(false);
   const [model, setModel] = useState<Model>(models[0]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [recents, setRecents] = useState(historyGroups);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -76,6 +78,24 @@ export default function HomeApp() {
       const content = text.trim();
       if (!content || pending) return;
       clearTimer();
+      if (!activeChatId) {
+        const id = makeId();
+        const title = titleFromPrompt(content);
+        setActiveChatId(id);
+        setRecents((prev) =>
+          prev.map((group) =>
+            group.label === "Today"
+              ? {
+                  ...group,
+                  chats: [
+                    { id, title, prompt: content, group: "Today" as const, time: "now" },
+                    ...group.chats,
+                  ],
+                }
+              : group,
+          ),
+        );
+      }
       setMessages((prev) => [...prev, { id: makeId(), role: "user", content }]);
       setDraft("");
       setChatTitle((prev) => prev ?? titleFromPrompt(content));
@@ -95,7 +115,7 @@ export default function HomeApp() {
         timerRef.current = null;
       }, 1400);
     },
-    [clearTimer, model.name, pending],
+    [activeChatId, clearTimer, model.name, pending],
   );
 
   const stop = useCallback(() => {
@@ -157,6 +177,7 @@ export default function HomeApp() {
   return (
     <div className="app-bg flex h-dvh w-full overflow-hidden text-white">
       <Sidebar
+        groups={recents}
         open={sidebarOpen}
         collapsed={collapsed}
         activeChatId={activeChatId}
@@ -207,6 +228,7 @@ export default function HomeApp() {
       </div>
 
       <CommandPalette
+        chats={recents.flatMap((group) => group.chats)}
         open={paletteOpen}
         onClose={() => setPaletteOpen(false)}
         onNewChat={newChat}

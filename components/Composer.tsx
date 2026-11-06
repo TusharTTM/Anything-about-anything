@@ -59,6 +59,8 @@ export default function Composer({
 }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const attachRef = useRef<HTMLDivElement>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [tools, setTools] = useState<Record<ToolKey, boolean>>({
     web: false,
@@ -76,6 +78,18 @@ export default function Composer({
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [value]);
+
+  useEffect(() => {
+    if (!popover) return;
+    const onPointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (popover === "attach" && attachRef.current?.contains(target)) return;
+      if (popover === "tools" && toolsRef.current?.contains(target)) return;
+      setPopover(null);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [popover]);
 
   useEffect(() => {
     if (focusToken > 0) {
@@ -152,7 +166,7 @@ export default function Composer({
         <div className="flex items-center justify-between gap-2 px-0.5 pb-0.5">
           <div className="flex items-center gap-0.5">
             {/* Attach */}
-            <div className="relative">
+            <div className="relative" ref={attachRef}>
               <button
                 onClick={() => setPopover(popover === "attach" ? null : "attach")}
                 className={`ring-focus grid h-8 w-8 place-items-center rounded-lg transition hover:bg-white/[0.07] hover:text-white ${
@@ -165,7 +179,6 @@ export default function Composer({
               </button>
               {popover === "attach" && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setPopover(null)} aria-hidden="true" />
                   <div className="absolute bottom-full left-0 z-50 mb-2 w-[248px] animate-popIn rounded-xl border border-white/10 bg-ink-800/95 p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
                     <button
                       onClick={() => fileRef.current?.click()}
@@ -191,7 +204,7 @@ export default function Composer({
             </div>
 
             {/* Tools */}
-            <div className="relative">
+            <div className="relative" ref={toolsRef}>
               <button
                 onClick={() => setPopover(popover === "tools" ? null : "tools")}
                 className={`ring-focus flex h-8 items-center gap-1.5 rounded-lg px-2 text-[11.5px] transition hover:bg-white/[0.07] hover:text-white ${
@@ -212,7 +225,6 @@ export default function Composer({
               </button>
               {popover === "tools" && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setPopover(null)} aria-hidden="true" />
                   <div className="absolute bottom-full left-0 z-50 mb-2 w-[min(276px,calc(100vw-3rem))] animate-popIn rounded-xl border border-white/10 bg-ink-800/95 p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl">
                     <div className="px-2.5 pb-1.5 pt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-white/25">
                       Tools

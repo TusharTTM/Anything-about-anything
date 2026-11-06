@@ -12,7 +12,7 @@ import {
   SquarePen,
   type LucideIcon,
 } from "lucide-react";
-import { allChats, type Chat } from "@/lib/data";
+import type { Chat } from "@/lib/data";
 
 type PaletteAction = {
   id: string;
@@ -23,6 +23,7 @@ type PaletteAction = {
 };
 
 type CommandPaletteProps = {
+  chats: Chat[];
   open: boolean;
   onClose: () => void;
   onNewChat: () => void;
@@ -31,6 +32,7 @@ type CommandPaletteProps = {
 };
 
 export default function CommandPalette({
+  chats,
   open,
   onClose,
   onNewChat,
@@ -87,7 +89,7 @@ export default function CommandPalette({
     (action) =>
       !q || action.label.toLowerCase().includes(q) || action.hint.toLowerCase().includes(q),
   );
-  const filteredChats = allChats.filter((chat) => !q || chat.title.toLowerCase().includes(q));
+  const filteredChats = chats.filter((chat) => !q || chat.title.toLowerCase().includes(q));
 
   const askItem: PaletteAction | null = q
     ? {
